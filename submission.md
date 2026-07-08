@@ -1,6 +1,12 @@
 # AI usage
 
-First, for trying to reproduce the bugs, I asked Copilot how to run these endpoints. I was struggling to get the <user_id> and asked it to help me find it. It gave me this command to run on my seeded data: -c "import sqlite3; conn=sqlite3.connect('instance/mixtape.db'); print(conn.execute('select id, username from user').fetchall())" - which had worked in showing me the 5 users and their user id's.
+First, for trying to reproduce the bugs, I asked GitHub Copilot how to run these endpoints. I was struggling to get the <user_id> and asked it to help me find it. It gave me this command to run on my seeded data: -c "import sqlite3; conn=sqlite3.connect('instance/mixtape.db'); print(conn.execute('select id, username from user').fetchall())" - which had worked in showing me the 5 users and their user id's.
+
+Second, I used Copilot to make a testing function for when the day of the week is Sunday and a user continued their streak the previous Day for issue 1. I told Copilot the issue, and asked it how I would both actually change the state of the program per day, as well as how I would use POSTMAN for proper testing of this issue. It gave me the commands and endpoints necessary, but also generated me a working test case for issue 1 in specific.
+
+Third, I used copilot to trace feed_service.py to find what was wrong with the 24-hour logic. I gave the AI-tool the specific file, the specific issue I was having, and why I had some confusions understanding what the logic even did in the first place. Not only did it explain to me what was going on in the program with some of these functions I had never seen before, but it also pointed out the fatal flaw within the logic that was causing the error. I obviously tested and validated this by making the change it wanted me to, and then retesting in POSTMAN.
+
+Fourth, I used copilot to help me generate commands and requests for Postman in general. What this helped me understand was both the problem I was working with at an API level and how to properly test with Postman. I had to verify with the actual outputs of the Postman requests, reading them thoroughly and not fully trusting the AI. Actually in issue 1, I was confused at first because I had tested the API endpoints, but totally missed when it said it could "make a test" for the sunday data as it was asking if I wanted that or something else. That was a mistake on my end and shows the value of fully validating the entire message that these AI tools send.
 
 # Codebase Map
 
@@ -75,3 +81,7 @@ The root cause was due to the return for get_playlist_songs(): "return [song.to_
 
 **5. Your fix and side-effect check**
 The fix was that I removed the "[:-1]" slice from the return function. A very fix, but a huge one, as now the data structure coudld return completed. The result was the playlist came back with the last song showing up. I tested my changes by sending a GET request into postman with the same link and data, and got 7 songs this time for Darius's user ID.
+
+# Screenshot of Commit History
+
+![alt text](image.png)
