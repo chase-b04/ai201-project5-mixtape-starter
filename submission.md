@@ -68,7 +68,10 @@ Issue #5 — The last song in a playlist never shows up
 How I reproduced it: I reproduced this bug by first running a GET request with postman on ttp://127.0.0.1:5000/playlists/<darius_user_id>/songs and it showed 6 songs when it was meant to show 7. To run a quick fix, I tried making a post request with link to darius's songs and raw JSOn body with the song_id and added_by (darius). When I tried that, I got an error about the content type, so when I tried to run the GET again, there still was only 6 songs.
 
 **3.How you found the root cause**
+Knowing from my previous two bugs where issues in the Services folder, I got the sense that there is where I should be bug hunting from here on out. Since this is an issue with the playlist, I knew I had to dive straight into playlist_service.py. I first read the first function, create_playlist(), didn't see anything out of the ordinary, read get_playlist_songs(), and something immediately caught me off guard. I knew that this had to be the right place for the bug off of knowing that this is a logical service issue that had to do with the playlists, making me confident that playlist_service.py had to be the troublemaking file.
 
 **4. The root cause**.
+The root cause was due to the return for get_playlist_songs(): "return [song.to_dict() for song in songs[:-1]]". The issue I noticed right off was the slice at the end of the function. Why would there be a slice there to begin with, and that would clearly remove the last element from the dictionary. I checked to make sure there maybe couldnt have been a bad tail and there wasn't, a slice in the return function was returning a playlist dictionary without it's last song!
 
 **5. Your fix and side-effect check**
+The fix was that I removed the "[:-1]" slice from the return function. A very fix, but a huge one, as now the data structure coudld return completed. The result was the playlist came back with the last song showing up. I tested my changes by sending a GET request into postman with the same link and data, and got 7 songs this time for Darius's user ID.
