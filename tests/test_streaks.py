@@ -7,7 +7,8 @@ Tests for listening streak logic.
 import pytest
 from datetime import datetime, timedelta, timezone
 from app import create_app, db
-from models import User
+from models import User, Song
+import services.streak_service as streak_service
 from services.streak_service import update_listening_streak, get_streak
 
 
@@ -94,3 +95,30 @@ def test_streak_increments_on_sunday(app, user):
 
         update_listening_streak(u, sunday)
         assert u.listening_streak == 2  # Should increment, not reset
+
+
+def test_record_listening_event_uses_sunday_time(app, user, monkeypatch):
+    """record_listening_event should treat Sunday like any other consecutive day."""
+    with app.app_context():
+        u = db.session.get(User, user.id)
+        saturday = datetime(2024, 6, 15, 12, 0, 0, tzinfo=timezone.utc)
+        sunday = datetime(2024, 6, 16, 12, 0, 0, tzinfo=timezone.utc)
+
+        song = Song(title="Sunday Test", artist="Test Artist", shared_by=u.id)
+        db.session.add(song)
+        db.session.commit()
+
+        update_listening_streak(u, saturday)
+        assert u.listening_streak == 1
+
+        class FakeDateTime:
+            @staticmethod
+            def now(tz=None):
+                return sunday
+
+        monkeypatch.setattr(streak_service, "datetime", FakeDateTime)
+
+        streak_service.record_listening_event(u.id, song.id)
+
+        updated_user = db.session.get(User, u.id)
+        assert updated_user.listening_streak == 2
